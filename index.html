@@ -2,10 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Paper Physics</title>
-
-  <!-- IMPORTANTE: carregar Matter.js antes do seu script -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <title>Papel com Three.js</title>
 
   <style>
     body {
@@ -23,11 +20,71 @@
 <body>
   <canvas id="canvas"></canvas>
 
-  <!-- seu script vem DEPOIS -->
-  <script src="script.js"></script>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 
-<canvas id="canvas"></canvas>
+    // cena
+    const scene = new THREE.Scene();
 
-<button id="toggleBtn">Pause</button>
+    // câmera
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    // render
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.getElementById("canvas"),
+      antialias: true
+    });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // geometria (papel com muitos segmentos)
+    const geometry = new THREE.PlaneGeometry(5, 3, 100, 100);
+
+    // textura (imagem)
+    const texture = new THREE.TextureLoader().load(
+      "https://picsum.photos/1200/800"
+    );
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.DoubleSide
+    });
+
+    const plane = new THREE.Mesh(geometry, material);
+    scene.add(plane);
+
+    camera.position.z = 5;
+
+    // animação (vento)
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const time = Date.now() * 0.002;
+      const pos = geometry.attributes.position;
+
+      for (let i = 0; i < pos.count; i++) {
+        const z = Math.sin(i * 0.1 + time) * 0.15;
+        pos.setZ(i, z);
+      }
+
+      pos.needsUpdate = true;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // responsivo
+    window.addEventListener("resize", () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+  </script>
 </body>
 </html>
