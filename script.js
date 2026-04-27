@@ -1,5 +1,6 @@
 import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 
+// cena
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
@@ -17,7 +18,10 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // geometria (papel)
-const geometry = new THREE.PlaneGeometry(12, 7, 120, 120);
+const segmentsX = 120;
+const segmentsY = 120;
+
+const geometry = new THREE.PlaneGeometry(12, 7, segmentsX, segmentsY);
 
 const texture = new THREE.TextureLoader().load(
   "https://picsum.photos/1920/1080"
@@ -33,22 +37,19 @@ scene.add(plane);
 
 camera.position.z = 5;
 
-// BOTÕES
-const segmentsX = 120; // mesmo valor da geometria
-const segmentsY = 120;
-
+// =============================
+// BOTÕES (layout padronizado)
+// =============================
 function getIndex(x, y) {
   return y * (segmentsX + 1) + x;
 }
 
-// distribuição moderna (linha central)
 const buttons = [
   { el: document.getElementById("btn1"), x: 30, y: 60 },
   { el: document.getElementById("btn2"), x: 60, y: 60 },
   { el: document.getElementById("btn3"), x: 90, y: 60 }
 ];
 
-// converter 3D → tela
 function updateButtonPosition(btnObj) {
   const pos = geometry.attributes.position;
 
@@ -66,21 +67,54 @@ function updateButtonPosition(btnObj) {
 
   btnObj.el.style.left = screenX + "px";
   btnObj.el.style.top = screenY + "px";
+  btnObj.el.style.transform = "translate(-50%, -50%)";
 }
+
+// =============================
+// FÍSICA MAIS SUAVE (AQUOSA)
+// =============================
+const pos = geometry.attributes.position;
+const velocities = new Float32Array(pos.count);
+
+// mouse interação
+let mouse = { x: 0, y: 0 };
+
+window.addEventListener("mousemove", (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+});
 
 // animação
 function animate() {
   requestAnimationFrame(animate);
 
-  const time = Date.now() * 0.002;
-  const pos = geometry.attributes.position;
+  const time = Date.now() * 0.001;
 
   for (let i = 0; i < pos.count; i++) {
-    const wave =
-      Math.sin(i * 0.05 + time) * 0.2 +
-      Math.cos(i * 0.03 + time * 0.7) * 0.1;
+    const x = pos.getX(i);
+    const y = pos.getY(i);
+    const currentZ = pos.getZ(i);
 
-    pos.setZ(i, wave);
+    // ondas combinadas (mais natural)
+    const baseWave =
+      Math.sin(x * 1.2 + time) * 0.15 +
+      Math.cos(y * 1.0 + time * 0.8) * 0.1;
+
+    // interação com mouse (ripple)
+    const dist = Math.sqrt(
+      Math.pow(x - mouse.x * 6, 2) +
+      Math.pow(y - mouse.y * 3, 2)
+    );
+
+    const ripple = Math.exp(-dist * 2) * 0.3;
+
+    const target = baseWave + ripple;
+
+    // inércia (efeito líquido)
+    velocities[i] += (target - currentZ) * 0.02;
+    velocities[i] *= 0.90;
+
+    pos.setZ(i, currentZ + velocities[i]);
   }
 
   pos.needsUpdate = true;
