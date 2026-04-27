@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #111;
+}
+
+canvas {
+  display: block;
+}
+
+#toggleBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+
+  background: #ffffff20;
+  color: white;
+  cursor: pointer;
+
+  backdrop-filter: blur(10px);
+}
+
+#toggleBtn:hover {
+  background: #ffffff40;
+}
