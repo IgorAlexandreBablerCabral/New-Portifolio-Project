@@ -2,31 +2,96 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Papel com Three.js</title>
+  <title>Portfólio</title>
 
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #111;
+      font-family: Arial, sans-serif;
+      color: white;
     }
 
+    /* canvas como background */
     canvas {
-      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    /* conteúdo por cima */
+    .ui {
+      position: relative;
+      z-index: 2;
+      pointer-events: none; /* evita conflito com canvas */
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 40px;
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.3);
+      pointer-events: auto;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      opacity: 0.7;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 15px;
+      font-size: 12px;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      pointer-events: auto;
     }
   </style>
 </head>
 
 <body>
+
+  <!-- BACKGROUND -->
   <canvas id="canvas"></canvas>
+
+  <!-- UI -->
+  <div class="ui">
+    <header>
+      <h1>Meu Portfólio</h1>
+      <nav>
+        <a href="#">Início</a>
+        <a href="#">Projetos</a>
+        <a href="#">Contato</a>
+      </nav>
+    </header>
+
+    <footer>
+      © 2026 - Meu Nome
+    </footer>
+  </div>
 
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.152.2/build/three.module.js";
 
-    // cena
     const scene = new THREE.Scene();
 
-    // câmera
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -34,7 +99,6 @@
       1000
     );
 
-    // render
     const renderer = new THREE.WebGLRenderer({
       canvas: document.getElementById("canvas"),
       antialias: true
@@ -42,12 +106,11 @@
 
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // geometria (papel com muitos segmentos)
-    const geometry = new THREE.PlaneGeometry(5, 3, 100, 100);
+    // PLANO GRANDE (preenche toda a tela)
+    const geometry = new THREE.PlaneGeometry(12, 7, 120, 120);
 
-    // textura (imagem)
     const texture = new THREE.TextureLoader().load(
-      "https://picsum.photos/1200/800"
+      "https://picsum.photos/1920/1080"
     );
 
     const material = new THREE.MeshBasicMaterial({
@@ -60,7 +123,6 @@
 
     camera.position.z = 5;
 
-    // animação (vento)
     function animate() {
       requestAnimationFrame(animate);
 
@@ -68,8 +130,11 @@
       const pos = geometry.attributes.position;
 
       for (let i = 0; i < pos.count; i++) {
-        const z = Math.sin(i * 0.1 + time) * 0.15;
-        pos.setZ(i, z);
+        const wave =
+          Math.sin(i * 0.05 + time) * 0.2 +
+          Math.cos(i * 0.03 + time * 0.7) * 0.1;
+
+        pos.setZ(i, wave);
       }
 
       pos.needsUpdate = true;
@@ -86,5 +151,6 @@
       camera.updateProjectionMatrix();
     });
   </script>
+
 </body>
 </html>
