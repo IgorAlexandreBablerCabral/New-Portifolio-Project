@@ -1,85 +1,89 @@
-let scene, camera, renderer, mesh;
-let isRunning = true;
-let animationId;
-
-init();
-animate();
-
-function init() {
-  scene = new THREE.Scene();
-
-  camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
-  camera.position.z = 5;
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  // geometria (muitos segmentos = mais realismo)
-  const geometry = new THREE.PlaneGeometry(6, 4, 100, 80);
-
-  // textura (imagem)
-  const texture = new THREE.TextureLoader().load(
-    "https://picsum.photos/1200/800"
-  );
-
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    side: THREE.DoubleSide
-  });
-
-  mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Segoe UI", sans-serif;
+  color: white;
 }
 
-function animate() {
-  if (!isRunning) return;
-
-  const time = Date.now() * 0.002;
-
-  // deformar vértices (vento)
-  const pos = mesh.geometry.attributes.position;
-
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i);
-    const y = pos.getY(i);
-
-    const wave =
-      Math.sin(x * 2 + time) * 0.2 +
-      Math.cos(y * 3 + time) * 0.1;
-
-    pos.setZ(i, wave);
-  }
-
-  pos.needsUpdate = true;
-
-  renderer.render(scene, camera);
-
-  animationId = requestAnimationFrame(animate);
+/* canvas fundo */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
 }
 
-// botão pause/play
-document.getElementById("toggleBtn").addEventListener("click", () => {
-  if (isRunning) {
-    cancelAnimationFrame(animationId);
-    document.getElementById("toggleBtn").textContent = "Play";
-  } else {
-    isRunning = true;
-    animate();
-    document.getElementById("toggleBtn").textContent = "Pause";
-  }
+/* UI geral */
+.ui {
+  position: relative;
+  z-index: 2;
+}
 
-  isRunning = !isRunning;
-});
+/* HEADER */
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 40px;
 
-// resize
-window.addEventListener("resize", () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-});
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.3);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+}
+
+nav a:hover {
+  opacity: 0.7;
+}
+
+/* BOTÕES */
+.floating-ui {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.paper-btn {
+  position: fixed;
+  z-index: 3;
+
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+
+  background: #e53935; /* vermelho */
+  color: white;
+
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.paper-btn:hover {
+  transform: scale(1.1);
+  background: #ff4d4d; /* vermelho mais claro */
+}
+
+/* FOOTER */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+
+  padding: 15px;
+  font-size: 12px;
+
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+}
